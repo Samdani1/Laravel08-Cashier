@@ -15,5 +15,19 @@ use Illuminate\Http\Request;
 */
 
 Route::get('/', function (Request $request) {
-    return $request->user()->redirectToBillingPortal();
+    return view('welcome');
 });
+
+Auth::routes();
+
+Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+Route::get('/subscribe', function(){
+    return view('subscribe', [
+        'intent'=> auth()->user()->createSetupIntent(),
+    ]);
+})->name('subscribe')->middleware('auth');
+
+Route::post('/subscribepost', function(Request $request){
+    auth()->user()->newSubscription('cashier', $request->plan)->create($request->paymentMethod);
+    return redirect('home');
+})->name('subscribe')->middleware('auth');
